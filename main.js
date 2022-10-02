@@ -29,7 +29,7 @@ let drums = {
 	47: new Howl({src: ['./sounds/Room-midtom21.wav']}),
 	49: new Howl({src: ['./sounds/schna18a1.wav']}),
 	51: new Howl({src: ['./sounds/sabfoot(R)11.wav']}),// ride cymbal
-	57: 49//new Howl({src: ['https://bigsoundbank.com/UPLOAD/mp3/2321.mp3']}) // crash cymbal
+	57: 49 // crash cymbal
 }
 
 for (let [key, value] of Object.entries(drums)) {
@@ -258,6 +258,7 @@ function update() {
 			case 'pre':
 				if (track.state() === 'loaded') {
 					playSong();
+					resetStats();
 					gameState = 'running'
 				}
 				break;
@@ -309,11 +310,11 @@ function update() {
 					beatCount += 1;
 				}
 				break;
-			// case 'finished':
-			// 	playSong();
-			// 	resetStats();
-			// 	gameState = 'running';
-			// 	break;
+			case 'finished':
+				// playSong();
+				// resetStats();
+				gameState = 'end';
+				break;
 			default:
 				break;
 		}
@@ -355,6 +356,9 @@ function update() {
 			text(`HiC: ${bestCombo}`, 5, 70);
 
 			text('Press to Retry', 10, 85);
+			// end('');
+			break;
+		case 'end':
 			end('');
 			break;
 		default:
