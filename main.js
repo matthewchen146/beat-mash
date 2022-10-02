@@ -107,6 +107,7 @@ fetchMidi('./mastodon.mid')
 
 let trackedNote = 36;
 let speedScale = 2;
+let pressOffset = 5;
 
 //
 
@@ -126,6 +127,11 @@ let createTextEffect = (text, color = 'white') => {
 
 
 let playSong = async () => {
+	track.stop();
+	midiPlayer.stop();
+	spawnMidiPlayer.stop();
+	beats = [];
+
 	console.log('starting playing');
 	track.on('play', () => {
 		console.log('started track')
@@ -169,7 +175,7 @@ let addCombo = (val) => {
 	}
 }
 
-let pressOffset = 5;
+
 let pressScale = 0;
 
 
@@ -201,9 +207,7 @@ function update() {
 	if (!ticks) {
 		// similar to on ready or on create
 		// playSong();
-		track.stop();
-		midiPlayer.stop();
-		spawnMidiPlayer.stop();
+		
 		resetStats();
 		gameState = 'pre';
 	}

@@ -14,14 +14,84 @@
     <script src="https://unpkg.com/pixi-filters@3.1.1/dist/pixi-filters.js"></script>
     <script src="https://unpkg.com/crisp-game-lib@1.1.0/docs/bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
-    
+
     <script src="midiplayer.js"></script>
     <script src="main.js"></script>
+
+    <style>
+      #menu {
+        position: fixed; 
+        z-index: 100; 
+        font-family: 'Courier New', Courier, monospace; 
+        background-color: black;
+        border-radius: 10px; 
+        padding: 5px;
+        opacity: .2;
+        width: 50px;
+        height: 20px;
+        transition: opacity 100ms;
+        overflow: hidden;
+      }
+
+      #menu:hover {
+        opacity: 1;
+        width: auto;
+        height: auto;
+      }
+    </style>
 
 <script>
 
 </script>
 
   </head>
-  <body style="background: #ddd"></body>
+  <body style="background: #ddd">
+    <div id="menu">
+      Menu
+      <p>Volume</p>
+      <input type="range" name="" id="volumeControl" value="100">
+      <p>Beat track</p>
+      <select name="" id="trackSelect">
+        <option value="36">Kick</option>
+        <option value="38">Snare</option>
+      </select>
+      <p>Speed</p>
+      <input type="range" name="" id="speedControl" value="2" min="1" max="10"><label id="speedLabel">2</label>
+      <p>
+        Credits:<br>
+        Mastodon - <br>
+        Blood and Thunder<br>
+        <a href="https://tabs.ultimate-guitar.com/tab/mastodon/blood-and-thunder-guitar-pro-251805">Original Tab</a><br>
+        <a href="http://tuxguitar.com.ar/">TuxGuitar Sound Fonts</a><br>
+        <a href="https://github.com/grimmdude/MidiPlayerJS">MidiPlayerJS</a><br>
+        <a href="https://github.com/goldfire/howler.js">Howler.js</a><br>
+        <a href="https://github.com/abagames/crisp-game-lib">crisp-game-lib</a>
+      </p>
+      
+      <script>
+        let menuDiv = document.querySelector('#menu');
+        let volumeControl = document.querySelector('#volumeControl');
+
+        volumeControl.addEventListener('input', (e) => {
+          let value = e.target.value;
+          Howler.volume(value / 100)
+        })
+
+        let trackSelect = document.querySelector('#trackSelect');
+        trackSelect.addEventListener('change', (e) => {
+          let value = e.target.value;
+          trackedNote = parseInt(value);
+        })
+        let speedControl = document.querySelector('#speedControl');
+        let speedLabel = document.querySelector('#speedLabel');
+        speedControl.addEventListener('input', (e) => {
+          let value = e.target.value;
+          speedScale = value;
+          speedLabel.textContent = value;
+        })
+      </script>
+    </div>
+    
+  </body>
+  
 </html>
