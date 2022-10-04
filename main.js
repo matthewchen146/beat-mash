@@ -1,22 +1,40 @@
+function checkWebGL2Support() {
+	let __gl = document.createElement('canvas').getContext('webgl2');
+	let supported = false;
+	if (!__gl) {
+		console.log('your browser/OS/drivers do not support WebGL2');
+	} else {
+		supported = true;
+		console.log('webgl2 works!');
+	}
+	__gl = undefined;
+	return supported;
+}
+
+let useAlternativeInput = true;
+
 title = "Beat Mash";
 
-description = `
+// console.log(window.location.href);
+const queryString = window.location.search;
+// console.log(queryString);
+const urlParams = new URLSearchParams(queryString);
+console.log()
+
+description = `Press to Start
 `;
 
 characters = [];
 
 options = {
-	theme: 'crt',
+	theme: urlParams.get('cheap') === 'true' || !checkWebGL2Support() ? 'dark' : 'crt',
 	viewSize: {
 		x: 100,
 		y: 120
 	},
-	isReplayEnabled: true
 };
 
-// let sound = new Howl({
-// 	src: ['./sounds/kickhard129.wav']
-// })
+// load setup
 
 let track = new Howl({src: ['./mastodon_nodrum.mp3']});
 let drums = {
@@ -200,6 +218,70 @@ let resetStats = () => {
 }
 
 
+let onInput = () => {
+	pressScale = 1;
+
+	switch (gameState) {
+		
+		case 'running':
+
+			playDrum(trackedNote, 100);
+		
+		
+			if (beats.length === 0) {
+				break;
+			}
+			
+			let currentBeat = beats[0];
+			
+			let diff = elapsed + pressOffset - currentBeat.target;
+			let absDiff = Math.abs(diff);
+			// console.log(diff)
+			if (diff < -200) {
+				
+				break;
+			} else {
+				if (absDiff < 150) {
+					addCombo(1);
+				} else {
+					setCombo(0);
+				}
+
+				if (absDiff < 50) {
+					createTextEffect('Rad!', 'green');
+					addScore(10 * combo);
+					hitCounts.a += 1;
+
+					particle(50,100,20,10)
+					
+				} else if (absDiff < 100) {
+					createTextEffect('Cool', 'blue');
+					addScore(5 * combo);
+					hitCounts.b += 1;
+				} else if (absDiff < 150) {
+					createTextEffect('Meh', 'light_black');
+					addScore(1 * combo);
+					hitCounts.c += 1;
+				} else {
+					createTextEffect('Miss', 'red');
+					hitCounts.d += 1;
+				}
+
+				beats.splice(0,1);
+				beatCount += 1;
+			}
+			break;
+		case 'finished':
+			// playSong();
+			// resetStats();
+			gameState = 'end';
+			break;
+		default:
+			break;
+	}
+}
+
+
 
 let drumsLoaded = false;
 
@@ -210,23 +292,6 @@ function update() {
 		
 		resetStats();
 		gameState = 'pre';
-	}
-
-	if (gameState === 'pre') {
-		drumsLoaded = true;
-		for (let sound of Object.values(drums)) {
-			if (typeof sound !== 'number') {
-				if (sound.state() !== 'loaded') {
-					drumsLoaded = false;
-					break;
-				}
-			}
-		}
-		if (drumsLoaded && track.state() === 'loaded') {
-			text('Press to Start', 10, 40);
-		} else {
-			text('Loading...', 10, 40);
-		}
 	}
 
 	if (gameState === 'running') {
@@ -249,79 +314,36 @@ function update() {
 
 	color('black');
 
-	if (input.isJustPressed) {
+	if (!useAlternativeInput && input.isJustPressed) {
 		// play('powerUp')
 		// sound.play();
-		pressScale = 1;
-
-		switch (gameState) {
-			case 'pre':
-				if (track.state() === 'loaded') {
-					playSong();
-					resetStats();
-					gameState = 'running'
-				}
-				break;
-			case 'running':
-
-				playDrum(trackedNote, 100);
-			
-			
-				if (beats.length === 0) {
-					break;
-				}
-				
-				let currentBeat = beats[0];
-				
-				let diff = elapsed + pressOffset - currentBeat.target;
-				let absDiff = Math.abs(diff);
-				// console.log(diff)
-				if (diff < -200) {
-					
-					break;
-				} else {
-					if (absDiff < 150) {
-						addCombo(1);
-					} else {
-						setCombo(0);
-					}
-
-					if (absDiff < 50) {
-						createTextEffect('Rad!', 'green');
-						addScore(10 * combo);
-						hitCounts.a += 1;
-
-						particle(50,100,20,10)
-						
-					} else if (absDiff < 100) {
-						createTextEffect('Cool', 'blue');
-						addScore(5 * combo);
-						hitCounts.b += 1;
-					} else if (absDiff < 150) {
-						createTextEffect('Meh', 'light_black');
-						addScore(1 * combo);
-						hitCounts.c += 1;
-					} else {
-						createTextEffect('Miss', 'red');
-						hitCounts.d += 1;
-					}
-
-					beats.splice(0,1);
-					beatCount += 1;
-				}
-				break;
-			case 'finished':
-				// playSong();
-				// resetStats();
-				gameState = 'end';
-				break;
-			default:
-				break;
-		}
+		onInput();
 	}
 
 
 	switch (gameState) {
+		case 'pre':
+			drumsLoaded = true;
+			for (let sound of Object.values(drums)) {
+				if (typeof sound !== 'number') {
+					if (sound.state() !== 'loaded') {
+						drumsLoaded = false;
+						break;
+					}
+				}
+			}
+			if (drumsLoaded && track.state() === 'loaded') {
+				text('Press to Start', 10, 40);
+			} else {
+				text('Loading...', 10, 40);
+			}
+
+			if (track.state() === 'loaded') {
+				playSong();
+				resetStats();
+				gameState = 'running'
+			}
+			break;
 		case 'post':
 			if (!track.playing()) {
 
@@ -425,3 +447,20 @@ function update() {
 }
 
 addEventListener("load", onLoad);
+
+
+
+// alternative input method
+
+let requireCanvasPress = true;
+document.addEventListener('click', (e) => {
+	// console.dir( e.target.tagName);
+	if (useAlternativeInput && requireCanvasPress && e.target.tagName === 'CANVAS') {
+		onInput();
+	}
+})
+document.addEventListener('keypress', (e) => {
+	if (useAlternativeInput) {
+		onInput();
+	}
+})
